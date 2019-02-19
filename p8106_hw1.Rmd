@@ -1,0 +1,22 @@
+---
+title: "HW 1"
+author: "Nathalie Fadel"
+date: "2/19/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(caret)
+library(boot)
+
+```
+
+```{r}
+sol_test = read_csv("data/solubility_test.csv") 
+
+sol_train = read_csv("data/solubility_train.csv")
+
+
+```
