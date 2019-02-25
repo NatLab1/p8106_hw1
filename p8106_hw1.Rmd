@@ -23,7 +23,7 @@ sol_train = read_csv("data/solubility_train.csv") #training data
 ```{r}
 ctrl1 <- trainControl(method = "cv", number = 10)
 # other options
-ctrl2 <- trainControl(method = "LOOCV")
+ctrl2 <- trainControl(method = "LOOCV") #leave others out cv
 ctrl3 <- trainControl(method = "none") # only fits one model to the entire training set
 ctrl4 <- trainControl(method = "boot632") #bootstrap method
 ctrl5 <- trainControl(method = "repeatedcv", repeats = 5) #5 times to repeat cv
@@ -33,7 +33,7 @@ set.seed(1)
 sol_fit1 <- train(Solubility~., 
                 data = sol_train, 
                 method = "lm", 
-                trControl = ctrl5)
+                trControl = ctrl4) #used boot632 method
 
 sol_fit1
 ```
