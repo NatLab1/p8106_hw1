@@ -19,10 +19,9 @@ sol_test = read_csv("data/solubility_test.csv") #test data
 sol_train = read_csv("data/solubility_train.csv") #training data
 ```
 
-##10-fold CV
+##Cross-validation methods tested
 ```{r}
-ctrl1 <- trainControl(method = "cv", number = 10)
-# other options
+ctrl1 <- trainControl(method = "cv", number = 10) #10-fold cv
 ctrl2 <- trainControl(method = "LOOCV") #leave others out cv
 ctrl3 <- trainControl(method = "none") # only fits one model to the entire training set
 ctrl4 <- trainControl(method = "boot632") #bootstrap method
@@ -33,8 +32,10 @@ set.seed(1)
 sol_fit1 <- train(Solubility~., 
                 data = sol_train, 
                 method = "lm", 
-                trControl = ctrl4) #used boot632 method
+                trControl = ctrl4) #bootstrap method
 
 sol_fit1
+
+
 ```
 
