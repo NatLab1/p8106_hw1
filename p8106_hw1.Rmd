@@ -9,6 +9,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 library(caret)
 library(boot)
+library(tidyverse)
 
 ```
 
@@ -19,7 +20,7 @@ sol_test = read_csv("data/solubility_test.csv") #test data
 sol_train = read_csv("data/solubility_train.csv") #training data
 ```
 
-##Cross-validation methods tested
+##Part A: Model fitting & cross-validation
 ```{r}
 ctrl1 <- trainControl(method = "cv", number = 10) #10-fold cv
 ctrl2 <- trainControl(method = "LOOCV") #leave others out cv
@@ -42,8 +43,21 @@ summary(sol_fit1)
 sol_fit2 <- train(Solubility~., 
                 data = sol_test, 
                 method = "lm", 
-                trControl = ctrl5)
-sol_fit2
+                trControl = ctrl2) #LOOCV 
+sol_fit2 #RMSE 1.561272, R^2 0.6137344, MAE 1.02854
 
 ```
+
+The model that was fit used all of the possible variables (228) in the sol_train dataset, with Solubility as the outcome variable. Then, using the Monte-Carlo method, also known as Leave One Out Cross-Validation, on the sol_test dataset, the RMSE was found to be 1.561272, R-squared is 0.6137344, and MAE is 1.02854.
+
+##Part B: Ridge Regression 
+```{r}
+
+
+```
+
+
+
+
+
 
