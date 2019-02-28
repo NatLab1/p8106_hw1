@@ -7,10 +7,16 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = T, message = FALSE, results='hide', warning=FALSE}
 library(caret)
 library(boot)
 library(tidyverse)
-
+library(ISLR)
+library(glmnet)
+library(corrplot)
+library(plotmo)
 ```
 
 ##Import data
@@ -48,16 +54,47 @@ sol_fit2 #RMSE 1.561272, R^2 0.6137344, MAE 1.02854
 
 ```
 
-The model that was fit used all of the possible variables (228) in the sol_train dataset, with Solubility as the outcome variable. Then, using the Monte-Carlo method, also known as Leave One Out Cross-Validation, on the sol_test dataset, the RMSE was found to be 1.561272, R-squared is 0.6137344, and MAE is 1.02854.
+The model that was fit used all of the possible variables (228) in the sol_train dataset, with Solubility as the outcome variable. Then, using the Monte-Carlo method, also known as Leave One Out Cross-Validation, on the sol_test dataset, the RMSE was found to be 1.561272, R-squared is 0.6137344, and MAE is 1.02854. I tested the other cross-validation methods listed above, but this method provided the lowest RMSE to highest R^2 value.
 
 ##Part B: Ridge Regression 
 ```{r}
 
+# matrix of predictors (glmnet uses input matrix)
+x <- model.matrix(Solubility~.,sol_train)[,-1]
+# vector of response
+y <- sol_train$Solubility
 
+corrplot(cor(x))
 ```
 
+```{r}
+# fit the ridge regression (alpha = 0) with a sequence of lambdas
+ridge.mod <- glmnet(x, y, alpha=0, lambda = exp(seq(-1, 10, length=100))) #sequence from -1 to 10
+#use exp from negative 1 to small positive number so you can use small tuning parameter
+#default setting in glmnet is standardize = TRUE.
 
+mat.coef <- coef(ridge.mod)
+dim(mat.coef)
 
+set.seed(2)
+cv.ridge <- cv.glmnet(x, y, 
+                      alpha = 0, 
+                      lambda = exp(seq(-1, 10, length=100)), 
+                      type.measure = "mse")
 
+plot(cv.ridge)
+```
 
+```{r}
+plot(ridge.mod, xvar = "lambda", label = TRUE)
+#Or:
+plot_glmnet(ridge.mod, xvar = "rlambda")
+```
 
+```{r}
+#coefficients of final model
+best.lambda <- cv.ridge$lambda.min #lambda.min will give lambda with smallest MSE
+best.lambda
+
+predict(ridge.mod, s = best.lambda, newx = x , type="response")
+```
