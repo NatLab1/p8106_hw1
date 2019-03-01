@@ -17,6 +17,7 @@ library(ISLR)
 library(glmnet)
 library(corrplot)
 library(plotmo)
+library(glmnetUtils)
 ```
 
 ##Import data
@@ -69,13 +70,14 @@ corrplot(cor(x))
 
 ```{r}
 # fit the ridge regression (alpha = 0) with a sequence of lambdas
-ridge.mod <- glmnet(x, y, alpha=0, lambda = exp(seq(-1, 10, length=100))) #sequence from -1 to 10
+ridge.mod <- glmnet(x, y, alpha=0, lambda = exp(seq(-1, 10, length=75))) #sequence from -1 to 10
 #use exp from negative 1 to small positive number so you can use small tuning parameter
 #default setting in glmnet is standardize = TRUE.
 
 mat.coef <- coef(ridge.mod)
 dim(mat.coef)
 
+#cross-validation
 set.seed(2)
 cv.ridge <- cv.glmnet(x, y, 
                       alpha = 0, 
@@ -93,8 +95,17 @@ plot_glmnet(ridge.mod, xvar = "rlambda")
 
 ```{r}
 #coefficients of final model
-best.lambda <- cv.ridge$lambda.min #lambda.min will give lambda with smallest MSE
+best.lambda <- cv.ridge$lambda.lse #lambda.min will give lambda with smallest MSE, .lse will do reverse
 best.lambda
 
 predict(ridge.mod, s = best.lambda, newx = x , type="response")
+```
+
+##Part C: Lasso
+```{r}
+cv.lasso <- cv.glmnet(x,y, alpha = 1, lambda = exp(seq(-1, 5, length=100))) #want lambda values that give smallest MSE. Make sure you have global min, not local min.
+#default value is standardize = TRUE
+cv.lasso$lambda.min
+
+plot(cv.lasso)
 ```
