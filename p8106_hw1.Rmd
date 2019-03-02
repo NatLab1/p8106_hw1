@@ -25,37 +25,28 @@ library(glmnetUtils)
 sol_test = read_csv("data/solubility_test.csv") #test data
 
 sol_train = read_csv("data/solubility_train.csv") #training data
-```
 
-##Part A: Model fitting & cross-validation
-```{r}
-ctrl1 <- trainControl(method = "cv", number = 10) #10-fold cv
-ctrl2 <- trainControl(method = "LOOCV") #leave others out cv
-ctrl3 <- trainControl(method = "none") # only fits one model to the entire training set
-ctrl4 <- trainControl(method = "boot632") #bootstrap method
-ctrl5 <- trainControl(method = "repeatedcv", repeats = 5) #5 times to repeat cv
-ctrl6 <- trainControl(method = "LGOCV") #leave group out cv, p = 0.75 is default, number = 25 is default
-
+#Omit NA values
 sol_train <- na.omit(sol_train)
 
 sol_test <- na.omit(sol_test)
-
-set.seed(1)
-sol_fit1 <- train(Solubility~., 
-                data = sol_train, 
-                method = "lm", 
-                trControl = ctrl3)
-summary(sol_fit1)
-
-sol_fit2 <- train(Solubility~., 
-                data = sol_test, 
-                method = "lm", 
-                trControl = ctrl2) #LOOCV 
-sol_fit2 #RMSE 1.561272, R^2 0.6137344, MAE 1.02854
-
 ```
 
-The model that was fit used all of the possible variables (228) in the sol_train dataset, with Solubility as the outcome variable. Then, using the Monte-Carlo method, also known as Leave One Out Cross-Validation, on the sol_test dataset, the RMSE was found to be 1.561272, R-squared is 0.6137344, and MAE is 1.02854. I tested the other cross-validation methods listed above, but this method provided the lowest RMSE to highest R^2 value.
+##Part A: Linear model fitting & finding MSE
+```{r}
+set.seed(1)
+sol_fit1 = lm(Solubility~., data = sol_train)
+
+summary(sol_fit1)
+
+sol_fit2 = predict(sol_fit1, data = sol_test)
+
+MSE=mean((sol_test$Solubility-sol_fit2)^2)
+#Show MSE
+print(MSE)
+
+```
+The model that was fit used all of the possible variables (228) in the sol_train dataset, with Solubility as the outcome variable. MSE found using test data is 8.915445. 
 
 ##Part B: Ridge Regression 
 ```{r}
@@ -70,7 +61,8 @@ corrplot(cor(x))
 
 ```{r}
 # fit the ridge regression (alpha = 0) with a sequence of lambdas
-ridge.mod <- glmnet(x, y, alpha=0, lambda = exp(seq(-1, 10, length=75))) #sequence from -1 to 10
+grid = 10^seq (-1, 10, length = 100)
+ridge.mod <- glmnet(x, y, alpha=0, lambda = grid) #sequence from -1 to 10
 #use exp from negative 1 to small positive number so you can use small tuning parameter
 #default setting in glmnet is standardize = TRUE.
 
@@ -81,7 +73,7 @@ dim(mat.coef)
 set.seed(2)
 cv.ridge <- cv.glmnet(x, y, 
                       alpha = 0, 
-                      lambda = exp(seq(-1, 10, length=100)), 
+                      lambda = grid, 
                       type.measure = "mse")
 
 plot(cv.ridge)
@@ -108,4 +100,22 @@ cv.lasso <- cv.glmnet(x,y, alpha = 1, lambda = exp(seq(-1, 5, length=100))) #wan
 cv.lasso$lambda.min
 
 plot(cv.lasso)
+```
+
+```{r}
+predict(cv.lasso, s="lambda.min", type="coefficients")
+#Results: Intercept, FP044, FP072, FP089, FP172, MolWeight, NumCarbon, HydrophilicFactor, SurfaceArea1
+
+set.seed(2)
+lasso.fit <- train(x, y,
+                     method = "glmnet",
+                     tuneGrid = expand.grid(alpha = 1, 
+                                            lambda = exp(seq(-1, 5, length=100))),
+                   # preProc = c("center", "scale"),
+                     trControl = ctrl1)
+plot(lasso.fit, xTrans = function(x) log(x))
+
+lasso.fit$bestTune
+
+coef(lasso.fit$finalModel,lasso.fit$bestTune$lambda)
 ```
