@@ -50,47 +50,32 @@ The model that was fit used all of the possible variables (228) in the sol_train
 
 ##Part B: Ridge Regression 
 ```{r}
+# train data input matrix and response vector
+xtrain = model.matrix(Solubility~.,sol_train)[,-1]
+ytrain = sol_train$Solubility
+#test data input matrix and response vector
+xtest = model.matrix(Solubility~.,sol_test)[,-1]
+ytest = sol_test$Solubility
 
-# matrix of predictors (glmnet uses input matrix)
-x <- model.matrix(Solubility~.,sol_train)[,-1]
-# vector of response
-y <- sol_train$Solubility
-
-corrplot(cor(x))
+#Using cross-validation to choose the tuning parameter ??
+set.seed (1)
+cv.out = cv.glmnet(xtrain, ytrain, alpha=0)
+plot(cv.out)
 ```
 
 ```{r}
-# fit the ridge regression (alpha = 0) with a sequence of lambdas
-grid = 10^seq (-1, 10, length = 100)
-ridge.mod <- glmnet(x, y, alpha=0, lambda = grid) #sequence from -1 to 10
-#use exp from negative 1 to small positive number so you can use small tuning parameter
-#default setting in glmnet is standardize = TRUE.
+bestlam = cv.out$lambda.min
+#Creating training model using ridge regression
+model = glmnet(xtrain, ytrain, alpha=0, lambda=bestlam)
+#Printing out the logistic model
+model$beta
 
-mat.coef <- coef(ridge.mod)
-dim(mat.coef)
+#Fitting training model on test set
+pred = predict(model, s=bestlam, newx=xtest)
+#Calculating Accuracy
+MSE = mean((pred-ytest)^2)
+print(MSE)
 
-#cross-validation
-set.seed(2)
-cv.ridge <- cv.glmnet(x, y, 
-                      alpha = 0, 
-                      lambda = grid, 
-                      type.measure = "mse")
-
-plot(cv.ridge)
-```
-
-```{r}
-plot(ridge.mod, xvar = "lambda", label = TRUE)
-#Or:
-plot_glmnet(ridge.mod, xvar = "rlambda")
-```
-
-```{r}
-#coefficients of final model
-best.lambda <- cv.ridge$lambda.lse #lambda.min will give lambda with smallest MSE, .lse will do reverse
-best.lambda
-
-predict(ridge.mod, s = best.lambda, newx = x , type="response")
 ```
 
 ##Part C: Lasso
