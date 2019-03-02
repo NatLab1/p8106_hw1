@@ -57,50 +57,60 @@ ytrain = sol_train$Solubility
 xtest = model.matrix(Solubility~.,sol_test)[,-1]
 ytest = sol_test$Solubility
 
-#Using cross-validation to choose the tuning parameter ??
+#Using cross-validation to choose the tuning parameter 
 set.seed (1)
 cv.out = cv.glmnet(xtrain, ytrain, alpha=0)
 plot(cv.out)
 ```
 
 ```{r}
-bestlam = cv.out$lambda.min
+bestlam1 = cv.out$lambda.min
 #Creating training model using ridge regression
-model = glmnet(xtrain, ytrain, alpha=0, lambda=bestlam)
+model1 = glmnet(xtrain, ytrain, alpha=0, lambda=bestlam1)
 #Printing out the logistic model
-model$beta
+model1$beta
 
 #Fitting training model on test set
-pred = predict(model, s=bestlam, newx=xtest)
+pred1 = predict(model1, s=bestlam1, newx=xtest)
 #Calculating Accuracy
-MSE = mean((pred-ytest)^2)
-print(MSE)
+MSE1 = mean((pred1-ytest)^2)
+print(MSE1)
 
 ```
 
 ##Part C: Lasso
 ```{r}
-cv.lasso <- cv.glmnet(x,y, alpha = 1, lambda = exp(seq(-1, 5, length=100))) #want lambda values that give smallest MSE. Make sure you have global min, not local min.
-#default value is standardize = TRUE
-cv.lasso$lambda.min
-
-plot(cv.lasso)
+set.seed (1)
+cv.out2 = cv.glmnet(xtrain, ytrain, alpha = 1)
+plot(cv.out2)
 ```
 
 ```{r}
-predict(cv.lasso, s="lambda.min", type="coefficients")
-#Results: Intercept, FP044, FP072, FP089, FP172, MolWeight, NumCarbon, HydrophilicFactor, SurfaceArea1
-
-set.seed(2)
-lasso.fit <- train(x, y,
-                     method = "glmnet",
-                     tuneGrid = expand.grid(alpha = 1, 
-                                            lambda = exp(seq(-1, 5, length=100))),
-                   # preProc = c("center", "scale"),
-                     trControl = ctrl1)
-plot(lasso.fit, xTrans = function(x) log(x))
-
-lasso.fit$bestTune
-
-coef(lasso.fit$finalModel,lasso.fit$bestTune$lambda)
+bestlam2 = cv.out2$lambda.min
+#Creating training model using lasso regression
+model2 = glmnet(xtrain, ytrain, alpha=1, lambda=bestlam2)
+#Printing out the logistic model
+model2$beta
 ```
+
+```{r}
+#Fitting training model on test set
+pred2 = predict(model2, s=bestlam2, newx=xtest)
+#Calculating Accuracy
+MSE2=mean((pred2-ytest)^2)
+#Printing MSE
+print(MSE2)
+```
+
+```{r}
+#Retrieving the lasso coefficients
+lasscoef=predict(model2, type="coefficients", s=bestlam2)[1:length(model2$beta),]
+#Printing non zero coefficients
+lasscoef[lasscoef!=0]
+```
+
+##Part 4: PCR Model
+```{r}
+
+```
+
