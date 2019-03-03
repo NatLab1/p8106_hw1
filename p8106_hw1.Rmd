@@ -110,7 +110,7 @@ lasscoef=predict(model2, type="coefficients", s=bestlam2)[1:length(model2$beta),
 lasscoef[lasscoef!=0]
 ```
 
-##Part 4: PCR Model
+##Part D: PCR Model
 ```{r}
 set.seed(1)
 pcr.fit = pcr(Solubility~., data = sol_train, scale=TRUE, validation="CV")
@@ -120,26 +120,8 @@ summary(pcr.fit)
 ```{r}
 validationplot(pcr.fit, val.type="MSEP")
 ```
-```{r}
-x = model.matrix(Solubility~., sol_train)[,-1] 
-y = sol_train$Solubility
-
-set.seed(1)
-train = sample(1:nrow(x),nrow(x)/2)
-test = (-train)
-y.test = y[test]
-
-set.seed(1)
-pcr.fit = pcr(Solubility~., data=sol_train, subset=train, scale=TRUE, validation="CV")
-validationplot(pcr.fit, val.type = "MSEP")
-```
 
 ```{r}
-pcr.pred = predict(pcr.fit, x[test,], ncomp=10)
-mean((pcr.pred-y.test)^2)
-```
-
-```{r}
-pcr.fit = pcr(y~x, scale=TRUE, ncomp=10)
-summary(pcr.fit)
+pcr.pred = predict(pcr.fit, newdata = sol_test, ncomp=228)
+mean((pcr.pred-ytest)^2)
 ```
