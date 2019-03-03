@@ -78,6 +78,7 @@ MSE1 = mean((pred1-ytest)^2)
 print(MSE1)
 
 ```
+The MSE from the ridge regression model is 0.5559241.
 
 ##Part C: Lasso
 ```{r}
@@ -93,6 +94,7 @@ model2 = glmnet(xtrain, ytrain, alpha=1, lambda=bestlam2)
 #Printing out the logistic model
 model2$beta
 ```
+There are `r (228-87)` nonzero predictors in the model.   
 
 ```{r}
 #Fitting training model on test set
@@ -102,6 +104,7 @@ MSE2=mean((pred2-ytest)^2)
 #Printing MSE
 print(MSE2)
 ```
+The MSE of the lasso model is 0.4952673. 
 
 ```{r}
 #Retrieving the lasso coefficients
@@ -124,6 +127,8 @@ validationplot(pcr.fit, val.type="MSEP")
 ```{r}
 pcr.pred = predict(pcr.fit, newdata = sol_test, ncomp=228)
 mean((pcr.pred-ytest)^2)
-```
+```  
+The MSE is 0.5558898, and the value of M is 228.  
+
 ##Part E: Conclusion  
 The Mean Squared Error from the Lasso regression model, 0.4952673, is the lowest out of the four models tested. Therefore, we should use this as the prediction model for Solubility. 
