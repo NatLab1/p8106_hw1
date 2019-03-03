@@ -5,7 +5,7 @@ date: "2/19/2019"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, results='hide', warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -125,3 +125,5 @@ validationplot(pcr.fit, val.type="MSEP")
 pcr.pred = predict(pcr.fit, newdata = sol_test, ncomp=228)
 mean((pcr.pred-ytest)^2)
 ```
+##Part E: Conclusion  
+The Mean Squared Error from the Lasso regression model, 0.4952673, is the lowest out of the four models tested. Therefore, we should use this as the prediction model for Solubility. 
